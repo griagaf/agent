@@ -4,6 +4,7 @@ use serde::{Serialize, Serializer};
 pub enum Error {
     EmptyQuestion,
     AskFailed,
+    PointerFailed,
 }
 
 impl Error {
@@ -11,6 +12,7 @@ impl Error {
         match self {
             Self::EmptyQuestion => 100,
             Self::AskFailed => 101,
+            Self::PointerFailed => 102,
         }
     }
 
@@ -18,6 +20,7 @@ impl Error {
         match self {
             Self::EmptyQuestion => "Напишите, что нужно сделать.",
             Self::AskFailed => "Не получилось выполнить запрос. Попробуйте ещё раз.",
+            Self::PointerFailed => "Не получилось показать указатель.",
         }
     }
 }

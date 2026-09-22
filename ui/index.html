@@ -22,6 +22,20 @@
 
       <ol id="trace" aria-live="polite"></ol>
       <p id="answer"></p>
+
+      <details id="pointer-check" open>
+        <summary>Проверка указателя</summary>
+        <div class="fields">
+          <label>слева <input id="left" type="number" value="100" /></label>
+          <label>сверху <input id="top" type="number" value="100" /></label>
+          <label>справа <input id="right" type="number" value="300" /></label>
+          <label>снизу <input id="bottom" type="number" value="160" /></label>
+        </div>
+        <div class="buttons">
+          <button id="show-pointer" type="button">Показать указатель</button>
+          <button id="hide-pointer" type="button">Скрыть указатель</button>
+        </div>
+      </details>
     </main>
 
     <script src="main.js"></script>

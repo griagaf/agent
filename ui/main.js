@@ -6,6 +6,8 @@ const question = document.getElementById("question");
 const send = document.getElementById("send");
 const trace = document.getElementById("trace");
 const answer = document.getElementById("answer");
+const showPointer = document.getElementById("show-pointer");
+const hidePointer = document.getElementById("hide-pointer");
 
 /** Те же события, что CLI печатает в консоль. */
 const line = {
@@ -47,3 +49,17 @@ form.addEventListener("submit", async (event) => {
 });
 
 question.focus();
+
+// Прямоугольник задаётся в физических пикселях — тех же, что вернёт UI Automation.
+function rect() {
+  const value = (id) => Number(document.getElementById(id).value);
+  return {
+    left: value("left"),
+    top: value("top"),
+    right: value("right"),
+    bottom: value("bottom"),
+  };
+}
+
+showPointer.addEventListener("click", () => invoke("show_pointer", { target: rect() }));
+hidePointer.addEventListener("click", () => invoke("hide_pointer"));

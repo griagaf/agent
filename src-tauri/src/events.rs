@@ -4,7 +4,7 @@ use serde::Serialize;
 use serde_json::Value;
 use tauri::{AppHandle, Emitter};
 
-pub const CHANNEL: &str = "agent:event";
+const CHANNEL: &str = "agent:event";
 
 #[derive(Serialize, Clone)]
 #[serde(tag = "kind", rename_all = "snake_case")]

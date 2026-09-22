@@ -2,6 +2,7 @@
 
 mod error;
 mod events;
+mod overlay;
 mod session;
 
 use agent::agent::Agent;
@@ -23,7 +24,15 @@ fn main() {
 
     let started = tauri::Builder::default()
         .manage(agent)
-        .invoke_handler(tauri::generate_handler![session::ask])
+        .setup(|app| {
+            overlay::create(app.handle())?;
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            session::ask,
+            overlay::show_pointer,
+            overlay::hide_pointer
+        ])
         .run(tauri::generate_context!());
 
     if let Err(reason) = started {

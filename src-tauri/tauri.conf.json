@@ -14,9 +14,11 @@
         "width": 760,
         "height": 620,
         "minWidth": 520,
-        "minHeight": 420
+        "minHeight": 420,
+        "label": "main"
       }
-    ]
+    ],
+    "macOSPrivateApi": true
   },
   "bundle": {
     "active": false,
