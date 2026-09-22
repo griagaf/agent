@@ -1,0 +1,92 @@
+:root {
+  --bg: #f5f5f7;
+  --card: #ffffff;
+  --text: #1b1b1f;
+  --muted: #6b6b76;
+  --accent: #2f6df6;
+  --error: #c0392b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 "Segoe UI", system-ui, sans-serif;
+}
+
+h1 {
+  margin: 0 0 16px;
+  font-size: 22px;
+}
+
+form {
+  display: flex;
+  gap: 8px;
+}
+
+input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid #d7d7de;
+  border-radius: 10px;
+  background: var(--card);
+  font: inherit;
+}
+
+input:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+
+button {
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #a9bde8;
+  cursor: default;
+}
+
+#trace {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+#trace li {
+  padding: 6px 0;
+  border-bottom: 1px solid #e6e6ec;
+}
+
+#trace li.failed {
+  color: var(--error);
+}
+
+#answer {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--card);
+  white-space: pre-wrap;
+}
+
+#answer:empty {
+  display: none;
+}
+
+#answer.failed {
+  color: var(--error);
+}

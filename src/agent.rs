@@ -47,7 +47,7 @@ impl Agent {
     pub async fn ask(
         &self,
         question: &str,
-        on_event: &mut dyn FnMut(AgentEvent),
+        on_event: &mut (dyn FnMut(AgentEvent) + Send),
     ) -> Result<String> {
         let specs = self.tools.specs();
         let mut history = vec![Turn::User(question.to_string())];

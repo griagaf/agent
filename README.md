@@ -10,4 +10,5 @@
 - `git clone git@github.com:griagaf/agent.git`
 - `cp .env.example .env`
 - `Указать ключ в .env`
-- `cargo run`
+- `cargo run` — консольный режим
+- `cargo run -p agent-app` — окно приложения
