@@ -1,4 +1,5 @@
 use std::cmp::Reverse;
+use std::collections::HashSet;
 
 use anyhow::{Context, Result, bail};
 use uiautomation::controls::ControlType;
@@ -16,6 +17,8 @@ const SEARCH_WAIT: u64 = 2500;
 const POLL_INTERVAL: u64 = 150;
 // Семи уровней по умолчанию не хватает: меню лежат глубже, а DOM веб-окон — ещё глубже.
 const SEARCH_DEPTH: u32 = 20;
+const WINDOW_LIST_DEPTH: u32 = 3;
+const WINDOW_LIST_LIMIT: usize = 12;
 
 pub fn find(target: &Target, limit: usize) -> Result<Vec<Match>> {
     let automation = connect()?;
@@ -36,6 +39,32 @@ pub fn exists(target: &Target) -> Result<bool> {
 
     // Закрытое окно — это и есть «элемента нет», а не сбой поиска.
     Ok(search(&automation, target, 0).is_ok_and(|found| !found.is_empty()))
+}
+
+// Верхние окна лежат прямо под рабочим столом, глубоко за ними ходить незачем.
+pub fn windows() -> Result<Vec<String>> {
+    let automation = connect()?;
+    let screen = virtual_screen();
+
+    let found = automation
+        .create_matcher()
+        .control_type(ControlType::Window)
+        .depth(WINDOW_LIST_DEPTH)
+        .timeout(0)
+        .find_all()
+        .unwrap_or_default();
+
+    // Вложенные окна носят заголовок родителя, поэтому одно имя приходит по многу раз.
+    let mut seen = HashSet::new();
+
+    Ok(found
+        .iter()
+        .filter_map(|element| describe(element, &screen, ""))
+        .map(|described| described.name)
+        .filter(|name| !name.trim().is_empty())
+        .filter(|name| seen.insert(name.clone()))
+        .take(WINDOW_LIST_LIMIT)
+        .collect())
 }
 
 pub fn click(target: &Target) -> Result<()> {

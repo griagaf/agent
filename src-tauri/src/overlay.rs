@@ -8,6 +8,15 @@ use crate::error::Error;
 
 const LABEL: &str = "pointer";
 const CHANNEL: &str = "pointer:target";
+const LEVEL_CHANNEL: &str = "pointer:level";
+
+// Ступени подсказки: сначала мягкая подсветка области, потом точная стрелка.
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum Level {
+    Region,
+    Pointer,
+}
 
 // Место стрелки внутри окна-оверлея, в логических пикселях CSS.
 #[derive(Debug, Clone, Serialize)]
@@ -16,6 +25,7 @@ struct Target {
     top: f64,
     width: f64,
     height: f64,
+    level: Level,
 }
 
 impl Target {
@@ -28,6 +38,7 @@ impl Target {
             top: f64::from(rect.top - origin.y) / scale,
             width: f64::from(rect.right - rect.left) / scale,
             height: f64::from(rect.bottom - rect.top) / scale,
+            level: Level::Region,
         }
     }
 }
@@ -72,6 +83,24 @@ pub(crate) fn point_at(app: &AppHandle, rect: Rect) -> Result<()> {
     window.set_size(*monitor.size())?;
     window.emit_to(LABEL, CHANNEL, Target::new(&monitor, rect))?;
     window.show()?;
+
+    Ok(())
+}
+
+#[tauri::command]
+pub fn raise_pointer(app: AppHandle) -> Result<(), Error> {
+    raise(&app).map_err(|e| {
+        error!("[raise_pointer] {e:#}");
+        Error::PointerFailed
+    })
+}
+
+fn raise(app: &AppHandle) -> Result<()> {
+    let Some(window) = app.get_webview_window(LABEL) else {
+        bail!("окно '{LABEL}' не создано");
+    };
+
+    window.emit_to(LABEL, LEVEL_CHANNEL, Level::Pointer)?;
 
     Ok(())
 }

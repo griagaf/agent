@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Как найти элемент: подпись, которую видит человек, плюс необязательные уточнения.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Target {
     pub name: String,
     #[serde(default)]

@@ -1,6 +1,7 @@
 use anyhow::{Result, anyhow, bail};
 use serde_json::{Value, json};
 
+use super::http;
 use super::{AssistantTurn, ToolCall, ToolSpec, Turn};
 use crate::config::Config;
 
@@ -39,15 +40,15 @@ impl AnthropicProvider {
             "messages": history.iter().map(turn_to_json).collect::<Vec<_>>(),
         });
 
-        let response = self
+        let request = self
             .http
             .post(format!("{}/v1/messages", self.base_url))
             .header("content-type", "application/json")
             .header("x-api-key", &self.api_key)
             .header("anthropic-version", API_VERSION)
-            .json(&body)
-            .send()
-            .await?;
+            .json(&body);
+
+        let response = http::send(request).await?;
 
         let status = response.status();
         let payload: Value = response.json().await?;

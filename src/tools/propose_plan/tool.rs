@@ -1,4 +1,4 @@
-use anyhow::{Result, bail};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
@@ -6,9 +6,9 @@ use crate::llm::ToolSpec;
 use crate::scenario::Plan;
 use crate::tools::Tool;
 
-pub const NAME: &str = "propose_plan";
+use super::check;
 
-const MAX_STEPS: usize = 12;
+pub const NAME: &str = "propose_plan";
 
 /// Вывод инструмента: его читает и модель, и окно, которое поведёт пользователя по шагам.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -52,7 +52,9 @@ impl Tool for ProposePlan {
                                 "target": {
                                     "type": "object",
                                     "description": "Элемент, на который показать стрелкой. \
-                                        Поля те же, что у find_element.",
+                                        Поля те же, что у find_element, window обязателен. \
+                                        Подписи бери из ответов find_element — выдуманные \
+                                        на экране не найдутся, и шаг зависнет.",
                                     "properties": {
                                         "name": { "type": "string" },
                                         "control_type": { "type": "string" },
@@ -75,7 +77,10 @@ impl Tool for ProposePlan {
                                     "description": "Признак, что шаг выполнен — то, чего \
                                         до шага на экране не было. Кнопка, которая видна \
                                         и так, проверкой быть не может: шаг засчитается \
-                                        сразу, и человек его не заметит. \
+                                        сразу, и человек его не заметит. В подписи для \
+                                        text_contains оставляй только устойчивую часть, \
+                                        без текущего значения: 'Отображать как', а не \
+                                        'Отображать как 0'. \
                                         {'kind':'appeared','target':{...}} — элемент \
                                         появился; {'kind':'disappeared','target':{...}} — \
                                         пропал; {'kind':'text_contains','target':{...},\
@@ -101,7 +106,7 @@ impl Tool for ProposePlan {
 
     fn call(&self, input: &Value) -> Result<String> {
         let plan = Plan::deserialize(input)?;
-        check(&plan)?;
+        check::plan(&plan)?;
 
         let accepted = Accepted {
             accepted: plan.steps.len(),
@@ -111,27 +116,6 @@ impl Tool for ProposePlan {
 
         Ok(serde_json::to_string(&accepted)?)
     }
-}
-
-fn check(plan: &Plan) -> Result<()> {
-    if plan.steps.is_empty() {
-        bail!("в плане нет ни одного шага");
-    }
-    if plan.steps.len() > MAX_STEPS {
-        bail!("шагов больше {MAX_STEPS}: разбей задачу на части покороче");
-    }
-
-    for (index, step) in plan.steps.iter().enumerate() {
-        let number = index + 1;
-        if step.hint.trim().is_empty() {
-            bail!("у шага {number} пустая подсказка");
-        }
-        if step.target.name.trim().is_empty() {
-            bail!("у шага {number} не указан элемент");
-        }
-    }
-
-    Ok(())
 }
 
 #[cfg(test)]
@@ -145,9 +129,12 @@ mod tests {
     fn one_step() -> Value {
         json!({
             "hint": "Нажмите меню Файл",
-            "target": { "name": "Файл", "control_type": "menu_item" },
+            "target": { "name": "Файл", "control_type": "menu_item", "window": "Блокнот" },
             "action": { "kind": "click" },
-            "expect": { "kind": "appeared", "target": { "name": "Сохранить как" } }
+            "expect": {
+                "kind": "appeared",
+                "target": { "name": "Сохранить как", "window": "Блокнот" }
+            }
         })
     }
 
@@ -164,6 +151,47 @@ mod tests {
     fn refuses_an_empty_plan() {
         let error = ProposePlan.call(&plan_with(json!([]))).unwrap_err();
         assert!(error.to_string().contains("ни одного шага"), "{error}");
+    }
+
+    #[test]
+    fn refuses_a_check_that_repeats_the_step_itself() {
+        let mut step = one_step();
+        step["expect"]["target"]["name"] = json!("файл");
+
+        let error = ProposePlan.call(&plan_with(json!([step]))).unwrap_err();
+        assert!(error.to_string().contains("того же элемента"), "{error}");
+    }
+
+    #[test]
+    fn refuses_a_check_without_a_window() {
+        let mut step = one_step();
+        step["expect"]["target"]
+            .as_object_mut()
+            .unwrap()
+            .remove("window");
+
+        let error = ProposePlan.call(&plan_with(json!([step]))).unwrap_err();
+        assert!(error.to_string().contains("у признака"), "{error}");
+    }
+
+    #[test]
+    fn refuses_two_steps_with_the_same_check() {
+        let plan = plan_with(json!([one_step(), one_step()]));
+
+        let error = ProposePlan.call(&plan).unwrap_err();
+        assert!(
+            error.to_string().contains("один и тот же признак"),
+            "{error}"
+        );
+    }
+
+    #[test]
+    fn refuses_a_step_without_a_window() {
+        let mut step = one_step();
+        step["target"].as_object_mut().unwrap().remove("window");
+
+        let error = ProposePlan.call(&plan_with(json!([step]))).unwrap_err();
+        assert!(error.to_string().contains("не указано окно"), "{error}");
     }
 
     #[test]

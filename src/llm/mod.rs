@@ -1,4 +1,5 @@
 pub mod anthropic;
+pub mod http;
 pub mod openai;
 
 use anyhow::Result;

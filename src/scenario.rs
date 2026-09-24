@@ -25,12 +25,22 @@ pub enum Action {
     Type { text: String },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum Expect {
     Appeared { target: Target },
     Disappeared { target: Target },
     TextContains { target: Target, text: String },
+}
+
+impl Expect {
+    pub fn target(&self) -> &Target {
+        match self {
+            Self::Appeared { target }
+            | Self::Disappeared { target }
+            | Self::TextContains { target, .. } => target,
+        }
+    }
 }
 
 /// Делает шаг за пользователя — режим «покажи сам».

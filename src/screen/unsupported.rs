@@ -12,6 +12,10 @@ pub fn exists(_target: &Target) -> Result<bool> {
     bail!(REASON);
 }
 
+pub fn windows() -> Result<Vec<String>> {
+    bail!(REASON);
+}
+
 pub fn click(_target: &Target) -> Result<()> {
     bail!(REASON);
 }

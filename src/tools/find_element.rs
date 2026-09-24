@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::{Result, bail};
 use serde_json::{Value, json};
 
@@ -6,6 +8,8 @@ use crate::screen::{self, Target};
 use crate::tools::Tool;
 
 const DEFAULT_LIMIT: u64 = 5;
+const NEARBY_LIMIT: usize = 12;
+const NEARBY_SCAN: usize = 60;
 const MAX_LIMIT: u64 = 20;
 
 pub struct FindElement;
@@ -25,8 +29,10 @@ impl Tool for FindElement {
                 "properties": {
                     "name": {
                         "type": "string",
-                        "description": "Подпись элемента или её часть, как она видна \
-                            на экране: 'Сохранить', 'Файл', 'Отмена'."
+                        "description": "Подпись элемента — то, что читает экранный \
+                            диктор, а не то, что нарисовано: у кнопок калькулятора это \
+                            'Пять' и 'Плюс', а не '5' и '+'. Не угадал — возьми подпись \
+                            из поля nearby в ответе."
                     },
                     "control_type": {
                         "type": "string",
@@ -50,21 +56,58 @@ impl Tool for FindElement {
     }
 
     fn call(&self, input: &Value) -> Result<String> {
-        let matches = screen::find(&parse_target(input)?, parse_limit(input))?;
+        let target = parse_target(input)?;
+        let matches = screen::find(&target, parse_limit(input))?;
 
         if matches.is_empty() {
-            return Ok(json!({
-                "found": 0,
-                "results": [],
-                "hint": "Такого элемента сейчас на экране нет. Возможно, нужное окно \
-                    закрыто или свёрнуто, либо подпись отличается — стоит переспросить \
-                    пользователя, что он видит."
-            })
-            .to_string());
+            return Ok(nothing_found(&target).to_string());
         }
 
         Ok(json!({ "found": matches.len(), "results": matches }).to_string())
     }
+}
+
+// На промахе важнее не «нет», а «вот что есть»: так модель поправится за один шаг,
+// а не станет перебирать подписи наугад.
+fn nothing_found(target: &Target) -> Value {
+    let Some(window) = &target.window else {
+        return json!({
+            "found": 0,
+            "results": [],
+            "open_windows": screen::windows().unwrap_or_default(),
+            "hint": "По всему экрану ничего не нашлось. Возьми нужное окно из \
+                open_windows и повтори поиск с полем window — так быстрее и точнее."
+        });
+    };
+
+    json!({
+        "found": 0,
+        "results": [],
+        "nearby": nearby_labels(target, window),
+        "hint": "В этом окне такого элемента нет. Возьми подпись из поля nearby: \
+            в Windows они бывают неожиданными. Если список пуст, окно закрыто — \
+            попроси пользователя открыть его."
+    })
+}
+
+fn nearby_labels(target: &Target, window: &str) -> Vec<String> {
+    let anything = Target {
+        name: String::new(),
+        control_type: target.control_type.clone(),
+        window: Some(window.to_string()),
+    };
+
+    // Порядок поиска ставит короткие подписи вперёд — это и есть простые кнопки.
+    let mut seen = HashSet::new();
+
+    screen::find(&anything, NEARBY_SCAN)
+        .unwrap_or_default()
+        .into_iter()
+        .map(|found| found.name)
+        .filter(|name| !name.trim().is_empty())
+        .filter(|name| seen.insert(name.clone()))
+        .take(NEARBY_LIMIT)
+        .collect()
 }
 
 fn parse_target(input: &Value) -> Result<Target> {

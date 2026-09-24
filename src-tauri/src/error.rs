@@ -7,6 +7,7 @@ pub enum Error {
     PointerFailed,
     StepFailed,
     ElementMissing,
+    NotConfigured,
 }
 
 impl Error {
@@ -17,6 +18,7 @@ impl Error {
             Self::PointerFailed => 102,
             Self::StepFailed => 103,
             Self::ElementMissing => 104,
+            Self::NotConfigured => 105,
         }
     }
 
@@ -27,6 +29,7 @@ impl Error {
             Self::PointerFailed => "Не получилось показать указатель.",
             Self::StepFailed => "Шаг не получилось выполнить.",
             Self::ElementMissing => "Не вижу этот элемент на экране. Откройте нужное окно.",
+            Self::NotConfigured => "Не настроен доступ к модели: проверьте файл .env.",
         }
     }
 }

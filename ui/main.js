@@ -2,6 +2,9 @@ const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
 
 const POLL_MS = 400;
+// Лестница подсказок: сначала слова, потом область, потом точная стрелка.
+const RAISE_MS = 7000;
+const OFFER_MS = 15000;
 
 const form = document.getElementById("form");
 const question = document.getElementById("question");
@@ -107,6 +110,8 @@ async function enter() {
     render();
   }
 
+  escalate(mine);
+
   if (mine !== generation) {
     return;
   }
@@ -119,6 +124,29 @@ async function enter() {
   }
 
   tick(mine);
+}
+
+// Пока человек справляется сам, подсказку не усиливаем.
+function escalate(mine) {
+  perform.classList.remove("urgent");
+
+  setTimeout(async () => {
+    if (!running || mine !== generation) {
+      return;
+    }
+    try {
+      await invoke("raise_pointer");
+    } catch {
+      // Указатель мог уже скрыться — усиливать нечего.
+    }
+  }, RAISE_MS);
+
+  setTimeout(() => {
+    if (!running || mine !== generation) {
+      return;
+    }
+    perform.classList.add("urgent");
+  }, OFFER_MS);
 }
 
 async function passes() {
@@ -151,6 +179,7 @@ async function tick(mine) {
 async function finish() {
   running = false;
   generation += 1;
+  perform.classList.remove("urgent");
   render();
   trouble.textContent = "Готово — все шаги сделаны.";
   await hidePointer();
@@ -163,6 +192,7 @@ async function halt() {
 
   running = false;
   generation += 1;
+  perform.classList.remove("urgent");
   trouble.textContent = "Остановлено.";
   await hidePointer();
 }

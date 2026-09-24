@@ -15,13 +15,10 @@ use log::{error, info};
 fn main() {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    let agent = match build_agent() {
-        Ok(agent) => agent,
-        Err(reason) => {
-            error!("[main] агент не собрался: {reason:#}");
-            std::process::exit(1);
-        }
-    };
+    // Окно поднимаем даже со сломанной настройкой, иначе человек не увидит причину.
+    let agent = build_agent()
+        .inspect_err(|reason| error!("[main] агент не собрался: {reason:#}"))
+        .ok();
 
     let started = tauri::Builder::default()
         .manage(agent)
@@ -32,6 +29,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             session::ask,
             overlay::hide_pointer,
+            overlay::raise_pointer,
             steps::show_step,
             steps::check_step,
             steps::perform_step

@@ -27,13 +27,47 @@ body {
   animation: pulse 1.4s ease-in-out infinite;
 }
 
-.arrow {
+/* Мягкая ступень: человек ещё ищет сам, показываем только область. */
+#spot[data-level="region"] .ring {
+  border-style: dashed;
+  border-width: 2px;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.8),
+    0 0 14px rgba(47, 109, 246, 0.4);
+}
+
+#spot[data-level="region"] .arrow-slot {
+  display: none;
+}
+
+.arrow-slot {
   position: absolute;
   right: 100%;
   bottom: 100%;
   width: 64px;
   height: 64px;
   margin: 0 6px 6px 0;
+  transform: scale(var(--flip-x, 1), var(--flip-y, 1));
+}
+
+#spot.flip-x .arrow-slot {
+  right: auto;
+  left: 100%;
+  margin: 0 0 6px 6px;
+  --flip-x: -1;
+}
+
+#spot.flip-y .arrow-slot {
+  bottom: auto;
+  top: 100%;
+  margin: 6px 6px 0 0;
+  --flip-y: -1;
+}
+
+.arrow {
+  display: block;
+  width: 100%;
+  height: 100%;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
   animation: nudge 1.4s ease-in-out infinite;
 }

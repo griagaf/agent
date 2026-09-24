@@ -11,7 +11,7 @@ mod windows;
 pub use types::{Match, Rect, Target};
 
 #[cfg(windows)]
-pub use windows::{click, exists, find, text_of, type_text};
+pub use windows::{click, exists, find, text_of, type_text, windows};
 
 #[cfg(not(windows))]
-pub use unsupported::{click, exists, find, text_of, type_text};
+pub use unsupported::{click, exists, find, text_of, type_text, windows};
