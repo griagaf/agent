@@ -5,6 +5,8 @@ pub enum Error {
     EmptyQuestion,
     AskFailed,
     PointerFailed,
+    StepFailed,
+    ElementMissing,
 }
 
 impl Error {
@@ -13,6 +15,8 @@ impl Error {
             Self::EmptyQuestion => 100,
             Self::AskFailed => 101,
             Self::PointerFailed => 102,
+            Self::StepFailed => 103,
+            Self::ElementMissing => 104,
         }
     }
 
@@ -21,6 +25,8 @@ impl Error {
             Self::EmptyQuestion => "Напишите, что нужно сделать.",
             Self::AskFailed => "Не получилось выполнить запрос. Попробуйте ещё раз.",
             Self::PointerFailed => "Не получилось показать указатель.",
+            Self::StepFailed => "Шаг не получилось выполнить.",
+            Self::ElementMissing => "Не вижу этот элемент на экране. Откройте нужное окно.",
         }
     }
 }

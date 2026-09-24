@@ -23,17 +23,27 @@
       <ol id="trace" aria-live="polite"></ol>
       <p id="answer"></p>
 
-      <details id="pointer-check" open>
-        <summary>Проверка указателя</summary>
-        <div class="fields">
-          <label>слева <input id="left" type="number" value="100" /></label>
-          <label>сверху <input id="top" type="number" value="100" /></label>
-          <label>справа <input id="right" type="number" value="300" /></label>
-          <label>снизу <input id="bottom" type="number" value="160" /></label>
-        </div>
+      <section id="plan" hidden>
+        <h2 id="plan-intro"></h2>
+        <ol id="plan-steps"></ol>
+        <p id="plan-trouble"></p>
         <div class="buttons">
-          <button id="show-pointer" type="button">Показать указатель</button>
-          <button id="hide-pointer" type="button">Скрыть указатель</button>
+          <button id="perform" type="button">Показать, как</button>
+          <button id="skip" type="button">Дальше</button>
+          <button id="stop" type="button">Остановить</button>
+        </div>
+      </section>
+
+      <details id="plan-check" open>
+        <summary>Прогнать план вручную</summary>
+        <textarea
+          id="plan-json"
+          rows="6"
+          spellcheck="false"
+          placeholder='{"intro": "...", "steps": [...]}'
+        ></textarea>
+        <div class="buttons">
+          <button id="run-plan" type="button">Прогнать</button>
         </div>
       </details>
     </main>

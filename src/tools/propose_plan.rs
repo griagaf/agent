@@ -1,19 +1,29 @@
 use anyhow::{Result, bail};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
 use crate::llm::ToolSpec;
 use crate::scenario::Plan;
 use crate::tools::Tool;
 
+pub const NAME: &str = "propose_plan";
+
 const MAX_STEPS: usize = 12;
+
+/// Вывод инструмента: его читает и модель, и окно, которое поведёт пользователя по шагам.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Accepted {
+    pub accepted: usize,
+    pub plan: Plan,
+    pub next: String,
+}
 
 pub struct ProposePlan;
 
 impl Tool for ProposePlan {
     fn spec(&self) -> ToolSpec {
         ToolSpec {
-            name: "propose_plan".to_string(),
+            name: NAME.to_string(),
             description: "Разбивает задачу на пошаговый план, по которому агент поведёт \
                 пользователя: на каждом шаге он показывает стрелкой нужный элемент, \
                 говорит подсказку и ждёт, пока человек сделает это сам. Вызывай, когда \
@@ -62,7 +72,10 @@ impl Tool for ProposePlan {
                                 },
                                 "expect": {
                                     "type": "object",
-                                    "description": "Признак, что шаг выполнен. \
+                                    "description": "Признак, что шаг выполнен — то, чего \
+                                        до шага на экране не было. Кнопка, которая видна \
+                                        и так, проверкой быть не может: шаг засчитается \
+                                        сразу, и человек его не заметит. \
                                         {'kind':'appeared','target':{...}} — элемент \
                                         появился; {'kind':'disappeared','target':{...}} — \
                                         пропал; {'kind':'text_contains','target':{...},\
@@ -90,12 +103,13 @@ impl Tool for ProposePlan {
         let plan = Plan::deserialize(input)?;
         check(&plan)?;
 
-        Ok(json!({
-            "accepted": plan.steps.len(),
-            "plan": plan,
-            "next": "План принят. Теперь коротко скажи пользователю, что будете делать."
-        })
-        .to_string())
+        let accepted = Accepted {
+            accepted: plan.steps.len(),
+            plan,
+            next: "План принят. Теперь коротко скажи пользователю, что будете делать.".to_string(),
+        };
+
+        Ok(serde_json::to_string(&accepted)?)
     }
 }
 

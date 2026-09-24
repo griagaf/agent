@@ -1,31 +1,13 @@
+use agent::screen::Rect;
 use anyhow::{Result, bail};
 use log::error;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, Monitor, WebviewUrl, WebviewWindowBuilder};
 
 use crate::error::Error;
 
 const LABEL: &str = "pointer";
 const CHANNEL: &str = "pointer:target";
-
-/// Прямоугольник элемента в физических пикселях — в них же отдаёт координаты UI Automation.
-#[derive(Debug, Clone, Copy, Deserialize)]
-pub struct Rect {
-    pub left: i32,
-    pub top: i32,
-    pub right: i32,
-    pub bottom: i32,
-}
-
-impl Rect {
-    fn center_x(&self) -> f64 {
-        f64::from(self.left + self.right) / 2.0
-    }
-
-    fn center_y(&self) -> f64 {
-        f64::from(self.top + self.bottom) / 2.0
-    }
-}
 
 // Место стрелки внутри окна-оверлея, в логических пикселях CSS.
 #[derive(Debug, Clone, Serialize)]
@@ -68,14 +50,6 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
 }
 
 #[tauri::command]
-pub fn show_pointer(app: AppHandle, target: Rect) -> Result<(), Error> {
-    point_at(&app, target).map_err(|e| {
-        error!("[show_pointer] {e:#}");
-        Error::PointerFailed
-    })
-}
-
-#[tauri::command]
 pub fn hide_pointer(app: AppHandle) -> Result<(), Error> {
     hide(&app).map_err(|e| {
         error!("[hide_pointer] {e:#}");
@@ -83,17 +57,14 @@ pub fn hide_pointer(app: AppHandle) -> Result<(), Error> {
     })
 }
 
-fn point_at(app: &AppHandle, rect: Rect) -> Result<()> {
+pub(crate) fn point_at(app: &AppHandle, rect: Rect) -> Result<()> {
     let Some(window) = app.get_webview_window(LABEL) else {
         bail!("окно '{LABEL}' не создано");
     };
 
-    let Some(monitor) = app.monitor_from_point(rect.center_x(), rect.center_y())? else {
-        bail!(
-            "для точки ({}, {}) нет монитора",
-            rect.center_x(),
-            rect.center_y()
-        );
+    let (x, y) = center(rect);
+    let Some(monitor) = app.monitor_from_point(x, y)? else {
+        bail!("для точки ({x}, {y}) нет монитора");
     };
 
     // Порядок важен: сначала накрываем монитор, потом показываем — иначе видно рывок.
@@ -103,6 +74,13 @@ fn point_at(app: &AppHandle, rect: Rect) -> Result<()> {
     window.show()?;
 
     Ok(())
+}
+
+fn center(rect: Rect) -> (f64, f64) {
+    (
+        f64::from(rect.left + rect.right) / 2.0,
+        f64::from(rect.top + rect.bottom) / 2.0,
+    )
 }
 
 fn hide(app: &AppHandle) -> Result<()> {

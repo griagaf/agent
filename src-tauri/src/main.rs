@@ -4,6 +4,7 @@ mod error;
 mod events;
 mod overlay;
 mod session;
+mod steps;
 
 use agent::agent::Agent;
 use agent::config::Config;
@@ -30,8 +31,10 @@ fn main() {
         })
         .invoke_handler(tauri::generate_handler![
             session::ask,
-            overlay::show_pointer,
-            overlay::hide_pointer
+            overlay::hide_pointer,
+            steps::show_step,
+            steps::check_step,
+            steps::perform_step
         ])
         .run(tauri::generate_context!());
 
