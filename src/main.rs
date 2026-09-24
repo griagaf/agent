@@ -1,10 +1,17 @@
 use std::io::{self, Write};
+use std::path::Path;
+use std::time::{Duration, Instant};
+use std::{fs, thread};
 
 use agent::agent::{Agent, AgentEvent};
 use agent::config::Config;
+use agent::scenario::{self, Expect, Plan};
 use agent::tools::ToolBox;
 use anyhow::{Result, bail};
 use serde_json::{Value, json};
+
+const STEP_TIMEOUT: Duration = Duration::from_secs(10);
+const POLL_INTERVAL: Duration = Duration::from_millis(200);
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -23,6 +30,7 @@ async fn main() -> Result<()> {
             };
             return call_tool("find_element", json!({ "name": name, "window": window }));
         }
+        Some("--plan") => return run_plan(Path::new(rest.trim())),
         _ => {}
     }
 
@@ -60,6 +68,45 @@ fn announce_dpi_awareness() {
 
 #[cfg(not(windows))]
 fn announce_dpi_awareness() {}
+
+// Прогон плана без модели: агент делает каждый шаг сам и сверяется с expect.
+fn run_plan(path: &Path) -> Result<()> {
+    let plan: Plan = serde_json::from_str(&fs::read_to_string(path)?)?;
+    println!(
+        "{}
+",
+        plan.intro
+    );
+
+    for (index, step) in plan.steps.iter().enumerate() {
+        println!("{}. {}", index + 1, step.hint);
+        scenario::perform(step)?;
+
+        if !wait_until_done(&step.expect)? {
+            bail!("шаг {} не подтвердился за {:?}", index + 1, STEP_TIMEOUT);
+        }
+        println!(
+            "   подтверждено
+"
+        );
+    }
+
+    println!("Сценарий пройден целиком.");
+    Ok(())
+}
+
+fn wait_until_done(expect: &Expect) -> Result<bool> {
+    let deadline = Instant::now() + STEP_TIMEOUT;
+
+    while Instant::now() < deadline {
+        if scenario::is_done(expect)? {
+            return Ok(true);
+        }
+        thread::sleep(POLL_INTERVAL);
+    }
+
+    Ok(false)
+}
 
 fn call_tool(name: &str, input: Value) -> Result<()> {
     let tools = ToolBox::with_defaults();
