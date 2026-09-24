@@ -1,5 +1,6 @@
 pub mod find_element;
 pub mod find_file;
+pub mod propose_plan;
 
 use std::sync::Arc;
 
@@ -25,6 +26,7 @@ impl ToolBox {
             tools: vec![
                 Arc::new(find_file::FindFile),
                 Arc::new(find_element::FindElement),
+                Arc::new(propose_plan::ProposePlan),
             ],
         }
     }
