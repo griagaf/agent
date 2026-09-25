@@ -60,11 +60,13 @@ fn check_step(step: &Step, number: usize) -> Result<()> {
     if step.target.name.trim().is_empty() {
         bail!("у шага {number} не указан элемент");
     }
-    if step.target.window.is_none() {
+    if step.target.window.is_none() && !step.target.is_window() {
         bail!("у шага {number} не указано окно: без него поиск идёт секунды");
     }
-    if step.expect.target().window.is_none() {
-        bail!("у признака шага {number} не указано окно: его проверяют по многу раз в секунду");
+
+    let signal = step.expect.target();
+    if signal.window.is_none() && !signal.is_window() {
+        bail!("у признака шага {number} не указано окно: его проверяют много раз в секунду");
     }
 
     let Expect::Appeared { target } = &step.expect else {

@@ -165,6 +165,13 @@ fn find_window(automation: &UIAutomation, title: &str) -> Result<UIElement> {
 }
 
 fn describe(element: &UIElement, screen: &Rect, query: &str) -> Option<Match> {
+    // Собственное окно агента тоже лежит на экране, и в его ленте встречаются те же слова.
+    if element
+        .get_process_id()
+        .is_ok_and(|owner| owner == std::process::id())
+    {
+        return None;
+    }
     if element.is_offscreen().unwrap_or(true) {
         return None;
     }

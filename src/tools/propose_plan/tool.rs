@@ -163,6 +163,15 @@ mod tests {
     }
 
     #[test]
+    fn allows_a_window_as_the_target_itself() {
+        let mut step = one_step();
+        step["expect"]["target"] = json!({ "name": "Калькулятор", "control_type": "window" });
+
+        let output = ProposePlan.call(&plan_with(json!([step]))).unwrap();
+        assert!(output.contains("accepted"), "{output}");
+    }
+
+    #[test]
     fn refuses_a_check_without_a_window() {
         let mut step = one_step();
         step["expect"]["target"]

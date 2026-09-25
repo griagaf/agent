@@ -1,7 +1,7 @@
 use agent::scenario::{self, Expect, Step};
 use agent::screen;
 use anyhow::{Context, Result};
-use log::{error, info};
+use log::{error, info, warn};
 use tauri::AppHandle;
 
 use crate::error::Error;
@@ -20,6 +20,7 @@ pub async fn show_step(app: AppHandle, step: Step) -> Result<(), Error> {
         })?;
 
     let Some(first) = found.first() else {
+        warn!("[show_step] элемента {} на экране нет", step.target.name);
         return Err(Error::ElementMissing);
     };
 

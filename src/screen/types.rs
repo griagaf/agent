@@ -10,6 +10,22 @@ pub struct Target {
     pub window: Option<String>,
 }
 
+impl Target {
+    /// Само окно: искать его внутри другого окна не нужно и негде.
+    pub fn is_window(&self) -> bool {
+        self.control_type
+            .as_deref()
+            .is_some_and(|kind| normalize(kind) == "window")
+    }
+}
+
+pub(super) fn normalize(control_type: &str) -> String {
+    control_type
+        .trim()
+        .to_lowercase()
+        .replace(['_', '-', ' '], "")
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Match {
     #[serde(skip)]

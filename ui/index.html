@@ -20,7 +20,9 @@
         <button id="send" type="submit">Спросить</button>
       </form>
 
-      <ol id="trace" aria-live="polite"></ol>
+      <!-- Лента диагностики не должна попадать в дерево доступности: агент ищет по нему
+           элементы и находил в ней собственные же записи. -->
+      <ol id="trace" aria-hidden="true"></ol>
       <p id="answer"></p>
 
       <section id="plan" hidden>
