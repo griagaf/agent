@@ -1,6 +1,8 @@
 use anyhow::{Result, bail};
 use uiautomation::controls::ControlType;
 
+use super::types::normalize;
+
 // Словарь для модели: английские имена, чтобы не зависеть от языка Windows.
 const CONTROL_TYPES: &[(&str, ControlType)] = &[
     ("button", ControlType::Button),
@@ -20,11 +22,11 @@ const CONTROL_TYPES: &[(&str, ControlType)] = &[
 ];
 
 pub(super) fn parse(name: &str) -> Result<ControlType> {
-    let wanted = name.trim().to_lowercase().replace(['_', '-', ' '], "");
+    let wanted = normalize(name);
 
     let found = CONTROL_TYPES
         .iter()
-        .find(|(key, _)| key.replace('_', "") == wanted)
+        .find(|(key, _)| normalize(key) == wanted)
         .map(|(_, control_type)| *control_type);
 
     let Some(control_type) = found else {
