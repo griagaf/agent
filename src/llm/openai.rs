@@ -1,6 +1,7 @@
 use anyhow::{Result, anyhow, bail};
 use serde_json::{Value, json};
 
+use super::http;
 use super::{AssistantTurn, ToolCall, ToolSpec, Turn};
 use crate::config::Config;
 
@@ -41,14 +42,14 @@ impl OpenAiProvider {
             "tool_choice": "auto",
         });
 
-        let response = self
+        let request = self
             .http
             .post(format!("{}/chat/completions", self.base_url))
             .header("content-type", "application/json")
             .bearer_auth(&self.api_key)
-            .json(&body)
-            .send()
-            .await?;
+            .json(&body);
+
+        let response = http::send(request).await?;
 
         let status = response.status();
         let payload: Value = response.json().await?;
@@ -111,13 +112,17 @@ fn parse_message(payload: &Value) -> Result<AssistantTurn> {
             let input = if arguments.trim().is_empty() {
                 json!({})
             } else {
-                serde_json::from_str(arguments)
-                    .map_err(|e| anyhow!("модель прислала некорректные аргументы ({e}): {arguments}"))?
+                serde_json::from_str(arguments).map_err(|e| {
+                    anyhow!("модель прислала некорректные аргументы ({e}): {arguments}")
+                })?
             };
 
             tool_calls.push(ToolCall {
                 id: call["id"].as_str().unwrap_or_default().to_string(),
-                name: call["function"]["name"].as_str().unwrap_or_default().to_string(),
+                name: call["function"]["name"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .to_string(),
                 input,
             });
         }

@@ -1,18 +1,37 @@
 use std::io::{self, Write};
+use std::path::Path;
+use std::time::{Duration, Instant};
+use std::{fs, thread};
 
 use agent::agent::{Agent, AgentEvent};
 use agent::config::Config;
+use agent::scenario::{self, Expect, Plan};
 use agent::tools::ToolBox;
 use anyhow::{Result, bail};
-use serde_json::json;
+use serde_json::{Value, json};
+
+const STEP_TIMEOUT: Duration = Duration::from_secs(10);
+const POLL_INTERVAL: Duration = Duration::from_millis(200);
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let args: Vec<String> = std::env::args().skip(1).collect();
+    announce_dpi_awareness();
 
-    // Отладочный режим: дёргаем инструмент напрямую, без модели и без ключа.
-    if args.first().is_some_and(|arg| arg == "--find") {
-        return find_directly(&args[1..].join(" "));
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let rest = args.get(1..).unwrap_or_default().join(" ");
+
+    // Отладочные режимы: дёргаем инструмент напрямую, без модели и без ключа.
+    match args.first().map(String::as_str) {
+        Some("--find") => return call_tool("find_file", json!({ "query": rest })),
+        Some("--element") => {
+            let (name, window) = match rest.split_once(" --in ") {
+                Some((name, window)) => (name, Some(window)),
+                None => (rest.as_str(), None),
+            };
+            return call_tool("find_element", json!({ "name": name, "window": window }));
+        }
+        Some("--plan") => return run_plan(Path::new(rest.trim())),
+        _ => {}
     }
 
     let question = args.join(" ");
@@ -32,17 +51,70 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn find_directly(query: &str) -> Result<()> {
-    if query.trim().is_empty() {
-        bail!("укажите, что искать: cargo run -- --find <часть имени файла>");
-    }
-
-    let tools = ToolBox::with_defaults();
-    let Some(tool) = tools.find("find_file") else {
-        bail!("инструмент find_file не зарегистрирован");
+// Пока процесс не объявлен DPI-осведомлённым, UI Automation делит координаты на масштаб экрана.
+#[cfg(windows)]
+fn announce_dpi_awareness() {
+    use windows::Win32::UI::HiDpi::{
+        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2, SetProcessDpiAwarenessContext,
     };
 
-    println!("{}", tool.call(&json!({ "query": query }))?);
+    // Безопасно: вызов без указателей, аргумент — константа самой системы.
+    if let Err(reason) =
+        unsafe { SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) }
+    {
+        println!("Внимание: координаты элементов будут неточными ({reason})");
+    }
+}
+
+#[cfg(not(windows))]
+fn announce_dpi_awareness() {}
+
+// Прогон плана без модели: агент делает каждый шаг сам и сверяется с expect.
+fn run_plan(path: &Path) -> Result<()> {
+    let plan: Plan = serde_json::from_str(&fs::read_to_string(path)?)?;
+    println!(
+        "{}
+",
+        plan.intro
+    );
+
+    for (index, step) in plan.steps.iter().enumerate() {
+        println!("{}. {}", index + 1, step.hint);
+        scenario::perform(step)?;
+
+        if !wait_until_done(&step.expect)? {
+            bail!("шаг {} не подтвердился за {:?}", index + 1, STEP_TIMEOUT);
+        }
+        println!(
+            "   подтверждено
+"
+        );
+    }
+
+    println!("Сценарий пройден целиком.");
+    Ok(())
+}
+
+fn wait_until_done(expect: &Expect) -> Result<bool> {
+    let deadline = Instant::now() + STEP_TIMEOUT;
+
+    while Instant::now() < deadline {
+        if scenario::is_done(expect)? {
+            return Ok(true);
+        }
+        thread::sleep(POLL_INTERVAL);
+    }
+
+    Ok(false)
+}
+
+fn call_tool(name: &str, input: Value) -> Result<()> {
+    let tools = ToolBox::with_defaults();
+    let Some(tool) = tools.find(name) else {
+        bail!("инструмент {name} не зарегистрирован");
+    };
+
+    println!("{}", tool.call(&input)?);
     Ok(())
 }
 

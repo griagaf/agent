@@ -1,4 +1,6 @@
+pub mod find_element;
 pub mod find_file;
+pub mod propose_plan;
 
 use std::sync::Arc;
 
@@ -21,7 +23,11 @@ pub struct ToolBox {
 impl ToolBox {
     pub fn with_defaults() -> Self {
         Self {
-            tools: vec![Arc::new(find_file::FindFile)],
+            tools: vec![
+                Arc::new(find_file::FindFile),
+                Arc::new(find_element::FindElement),
+                Arc::new(propose_plan::ProposePlan),
+            ],
         }
     }
 
