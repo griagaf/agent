@@ -1,0 +1,8 @@
+# Все текстовые файлы хранятся и выкладываются с LF, на любой системе.
+* text=auto eol=lf
+
+# Двоичные файлы не трогаем.
+*.png binary
+*.ico binary
+*.icns binary
+*.woff2 binary
