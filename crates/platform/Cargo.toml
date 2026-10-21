@@ -1,0 +1,13 @@
+[package]
+name = "mentor-platform"
+description = "Доступ к ОС: элементы интерфейса, снимок экрана, ввод, мониторы"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+mentor-core.workspace = true
+
+[lints]
+workspace = true

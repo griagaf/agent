@@ -2009,11 +2009,55 @@ dependencies = [
 name = "mentor-app"
 version = "0.0.0"
 dependencies = [
+ "mentor-engine",
+ "mentor-llm",
+ "mentor-platform",
+ "mentor-storage",
  "serde",
  "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-opener",
+]
+
+[[package]]
+name = "mentor-core"
+version = "0.0.0"
+
+[[package]]
+name = "mentor-engine"
+version = "0.0.0"
+dependencies = [
+ "mentor-core",
+]
+
+[[package]]
+name = "mentor-llm"
+version = "0.0.0"
+dependencies = [
+ "mentor-core",
+]
+
+[[package]]
+name = "mentor-platform"
+version = "0.0.0"
+dependencies = [
+ "mentor-core",
+]
+
+[[package]]
+name = "mentor-storage"
+version = "0.0.0"
+dependencies = [
+ "mentor-core",
+]
+
+[[package]]
+name = "mentor-testkit"
+version = "0.0.0"
+dependencies = [
+ "mentor-core",
+ "mentor-engine",
 ]
 
 [[package]]

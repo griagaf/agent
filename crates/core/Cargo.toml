@@ -1,0 +1,10 @@
+[package]
+name = "mentor-core"
+description = "Ядро: типы задачи, автомат сессии и быстрый поиск цели на экране"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true

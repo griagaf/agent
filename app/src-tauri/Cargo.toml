@@ -16,6 +16,10 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build.workspace = true
 
 [dependencies]
+mentor-engine.workspace = true
+mentor-llm.workspace = true
+mentor-platform.workspace = true
+mentor-storage.workspace = true
 tauri.workspace = true
 tauri-plugin-opener.workspace = true
 serde.workspace = true
