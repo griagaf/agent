@@ -21,9 +21,6 @@ mentor-llm.workspace = true
 mentor-platform.workspace = true
 mentor-storage.workspace = true
 tauri.workspace = true
-tauri-plugin-opener.workspace = true
-serde.workspace = true
-serde_json.workspace = true
 
 [lints]
 workspace = true

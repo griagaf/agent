@@ -12,7 +12,9 @@
   "app": {
     "windows": [
       {
-        "title": "agent",
+        "label": "main",
+        "title": "Агент-наставник",
+        "url": "windows/main/index.html",
         "width": 800,
         "height": 600
       }
