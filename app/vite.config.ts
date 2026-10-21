@@ -21,5 +21,13 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,vue}"],
+      // Точки входа окон только монтируют приложение.
+      exclude: ["src/**/*.test.ts", "src/env.d.ts", "src/windows/*/main.ts"],
+      reporter: ["text", "lcov"],
+      thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
+    },
   },
 });

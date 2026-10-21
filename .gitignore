@@ -1,6 +1,10 @@
 # Rust
 /target/
 
+# Отчёты о покрытии
+coverage/
+lcov.info
+
 # Фронт
 node_modules/
 dist/
