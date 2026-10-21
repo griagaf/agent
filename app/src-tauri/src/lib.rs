@@ -1,9 +1,11 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+//! Приложение Tauri: окна, команды и трей.
+
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+/// Собирает и запускает приложение.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
