@@ -1,0 +1,95 @@
+{
+  "task_title": "Найти скачанный файл",
+  "steps": [
+    {
+      "title": "Открыть «Проводник»",
+      "actions": [
+        {
+          "target": {
+            "roles": ["button"],
+            "names": ["Проводник", "File Explorer"],
+            "scope": { "app": "explorer.exe" },
+            "region": "bottom"
+          },
+          "kind": { "type": "click" },
+          "success": {
+            "type": "window_appeared",
+            "title": { "any_of": ["Проводник", "Главная", "Этот компьютер"] }
+          },
+          "card": {
+            "title": "Нажмите на жёлтую папку",
+            "body": "Она {где}. Откроется окно с вашими папками."
+          },
+          "certainty": "exact"
+        }
+      ]
+    },
+    {
+      "title": "Открыть «Загрузки»",
+      "actions": [
+        {
+          "target": {
+            "roles": ["tree_item", "list_item"],
+            "names": ["Загрузки", "Downloads"],
+            "scope": { "app": "explorer.exe" },
+            "region": "left"
+          },
+          "kind": { "type": "click" },
+          "success": {
+            "type": "any",
+            "of": [
+              { "type": "window_appeared", "title": { "contains": "Загрузки" } },
+              { "type": "selected", "target": { "names": ["Загрузки", "Downloads"] } }
+            ]
+          },
+          "card": {
+            "title": "Нажмите на «Загрузки»",
+            "body": "Это строка в списке слева. Справа появятся скачанные файлы."
+          },
+          "certainty": "sketch"
+        }
+      ]
+    },
+    {
+      "title": "Открыть сайт почты",
+      "actions": [
+        {
+          "target": { "roles": ["edit"], "names": ["Адресная строка", "Address and search bar"] },
+          "kind": { "type": "click" },
+          "success": {
+            "type": "focus_in",
+            "target": { "roles": ["edit"], "names": ["Адресная строка", "Address and search bar"] }
+          },
+          "card": {
+            "title": "Нажмите на длинную строку вверху",
+            "body": "Это адресная строка: сюда пишут адрес сайта, как адрес на конверте."
+          },
+          "certainty": "sketch"
+        },
+        {
+          "target": { "roles": ["edit"], "names": ["Адресная строка", "Address and search bar"] },
+          "kind": { "type": "type_text", "text": { "exact": "mail.yandex.ru" } },
+          "success": {
+            "type": "value_matches",
+            "field": { "names": ["Адресная строка", "Address and search bar"] },
+            "text": { "contains": "mail.yandex.ru" }
+          },
+          "card": {
+            "title": "Напечатайте адрес сайта",
+            "body": "Наберите на клавиатуре: mail.yandex.ru"
+          },
+          "certainty": "sketch"
+        },
+        {
+          "kind": { "type": "press_key", "key": "enter" },
+          "success": { "type": "address_matches", "text": { "contains": "mail.yandex" } },
+          "card": {
+            "title": "Нажмите клавишу Enter",
+            "body": "На рисунке она синяя. Откроется сайт почты."
+          },
+          "certainty": "sketch"
+        }
+      ]
+    }
+  ]
+}
