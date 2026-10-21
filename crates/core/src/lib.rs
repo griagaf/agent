@@ -6,3 +6,9 @@
 //! Поэтому пакет собирается и тестируется на любой системе.
 
 #![forbid(unsafe_code)]
+
+pub mod condition;
+pub mod grounding;
+pub mod observation;
+pub mod outcome;
+pub mod plan;
