@@ -1,0 +1,13 @@
+[package]
+name = "mentor-storage"
+description = "Журнал сессии, настройки и хранилище ключа"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+mentor-core.workspace = true
+
+[lints]
+workspace = true

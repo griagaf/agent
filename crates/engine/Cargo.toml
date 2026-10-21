@@ -1,0 +1,13 @@
+[package]
+name = "mentor-engine"
+description = "Исполнитель сессии: очередь событий, поручения ядра, таймеры и отмена"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+publish.workspace = true
+
+[dependencies]
+mentor-core.workspace = true
+
+[lints]
+workspace = true
