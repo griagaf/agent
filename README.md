@@ -16,6 +16,10 @@ bun run tauri dev
 
 ```
 Cargo.toml     Cargo workspace: общие версии зависимостей и линты
+crates/        ядро и адаптеры (mentor-core, -engine, -llm, -platform, -storage, -testkit)
 app/           интерфейс на Vue и TypeScript
 app/src-tauri/ приложение Tauri (крейт mentor-app)
+docs/          документация
 ```
+
+Как устроен код и какие правила связывают пакеты, описано в [docs/architecture.md](docs/architecture.md).
