@@ -2,6 +2,9 @@
 
 use std::process::Command;
 
+/// Пакет ядра, границы которого проверяются.
+const CORE_PACKAGE: &str = "mentor-core";
+
 /// Пакеты, которых не должно быть в дереве зависимостей ядра.
 const FORBIDDEN: &[&str] = &[
     "tokio",
@@ -14,12 +17,12 @@ const FORBIDDEN: &[&str] = &[
 
 /// Проверяет дерево зависимостей `mentor-core` на всех целевых платформах.
 pub fn check(cargo: &str) -> Result<(), String> {
-    eprintln!("> cargo tree --package mentor-core");
+    eprintln!("> cargo tree --package {CORE_PACKAGE}");
     let output = Command::new(cargo)
         .args([
             "tree",
             "--package",
-            "mentor-core",
+            CORE_PACKAGE,
             "--edges",
             "normal",
             "--target",
@@ -39,7 +42,7 @@ pub fn check(cargo: &str) -> Result<(), String> {
         Ok(())
     } else {
         Err(format!(
-            "mentor-core не должен зависеть от: {}",
+            "{CORE_PACKAGE} не должен зависеть от: {}",
             found.join(", ")
         ))
     }
