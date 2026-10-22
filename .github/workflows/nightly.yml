@@ -1,0 +1,39 @@
+name: Ночная сборка
+
+on:
+  schedule:
+    # 03:00 по Новосибирску
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Установщик Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: changes
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ -n "$(git log --since='24 hours ago' --oneline)" ]; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.changes.outputs.build == 'true'
+        uses: Swatinem/rust-cache@v2
+      - if: steps.changes.outputs.build == 'true'
+        uses: oven-sh/setup-bun@v2
+      - if: steps.changes.outputs.build == 'true'
+        run: bun install --frozen-lockfile
+        working-directory: app
+      - if: steps.changes.outputs.build == 'true'
+        uses: tauri-apps/tauri-action@v1
+        with:
+          projectPath: app
+          tauriScript: bun run tauri
+          args: --bundles nsis
+          uploadWorkflowArtifacts: true
