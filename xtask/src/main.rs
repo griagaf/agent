@@ -6,10 +6,12 @@
 //! cargo xtask check               форматирование, clippy, тесты, документация, границы ядра
 //! cargo xtask coverage            тесты с порогом покрытия (нужен cargo-llvm-cov)
 //! cargo xtask commits [диапазон]  формат коммитов, по умолчанию origin/main..HEAD
+//! cargo xtask release X.Y.Z       версия, Cargo.lock и CHANGELOG.md (нужен git-cliff)
 //! ```
 
 mod boundaries;
 mod commits;
+mod release;
 
 use std::env;
 use std::process::{Command, ExitCode};
@@ -23,19 +25,27 @@ const COVERAGE_IGNORE: &str = r"app[/\\]src-tauri[/\\]src[/\\](main|lib)\.rs$";
 /// Куда `coverage` пишет отчёт в формате lcov.
 const COVERAGE_LCOV: &str = "target/lcov.info";
 
+/// Диапазон коммитов для `commits` по умолчанию: всё, что в ветке сверх `main`.
+const DEFAULT_COMMIT_RANGE: &str = "origin/main..HEAD";
+
 const USAGE: &str = "Использование: cargo xtask <команда>
 
 Команды:
   check               форматирование, clippy, тесты, документация, границы ядра
   coverage            тесты с порогом покрытия (нужен cargo-llvm-cov)
-  commits [диапазон]  формат коммитов, по умолчанию origin/main..HEAD";
+  commits [диапазон]  формат коммитов, по умолчанию origin/main..HEAD
+  release X.Y.Z       версия, Cargo.lock и CHANGELOG.md (нужен git-cliff)";
 
 fn main() -> ExitCode {
     let args: Vec<String> = env::args().skip(1).collect();
     let result = match args.first().map(String::as_str) {
         Some("check") => check(),
         Some("coverage") => coverage(),
-        Some("commits") => commits::check(args.get(1).map_or("origin/main..HEAD", String::as_str)),
+        Some("commits") => commits::check(args.get(1).map_or(DEFAULT_COMMIT_RANGE, String::as_str)),
+        Some("release") => match args.get(1) {
+            Some(version) => release::prepare(version, &cargo_path()),
+            None => Err(USAGE.to_owned()),
+        },
         _ => Err(USAGE.to_owned()),
     };
     match result {
