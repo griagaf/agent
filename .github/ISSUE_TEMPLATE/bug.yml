@@ -1,0 +1,37 @@
+name: Ошибка
+description: Что-то работает не так, как ожидалось
+labels: [bug]
+body:
+  - type: textarea
+    id: actual
+    attributes:
+      label: Что происходит
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Что ожидалось
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Как повторить
+      value: |
+        1.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Версия приложения
+  - type: input
+    id: system
+    attributes:
+      label: Система и масштаб экрана
+      placeholder: Windows 11, 150%
+  - type: textarea
+    id: logs
+    attributes:
+      label: Журнал или скриншот
