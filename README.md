@@ -17,10 +17,14 @@ bun run tauri dev
 | Где | Команда | Что проверяет |
 |---|---|---|
 | `app/` | `bun run check` | Типы, тесты и покрытие фронта |
-| корень | `cargo xtask check` | Форматирование, clippy и тесты Rust |
-| корень | `cargo xtask coverage` | Покрытие Rust |
+| корень | `cargo xtask check` | Форматирование, clippy, тесты, документацию и границы ядра |
+| корень | `cargo xtask coverage` | Покрытие Rust, отчёт в `target/lcov.info` |
+| корень | `cargo xtask commits` | Формат коммитов ветки относительно `origin/main` |
+| корень | `cargo deny check` | Лицензии, уязвимости и источники зависимостей |
 
-Порог покрытия 80%. Для покрытия Rust нужен [cargo-llvm-cov](https://github.com/taiki-e/cargo-llvm-cov): `cargo install cargo-llvm-cov`.
+Порог покрытия 80%. Для покрытия Rust нужен [cargo-llvm-cov](https://github.com/taiki-e/cargo-llvm-cov), для проверки зависимостей [cargo-deny](https://github.com/EmbarkStudios/cargo-deny): `cargo install cargo-llvm-cov cargo-deny`.
+
+Те же проверки GitHub Actions запускает на каждый пулл-реквест, на macOS и Windows.
 
 ## Структура
 
