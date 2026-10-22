@@ -1,0 +1,24 @@
+name: Проба
+description: Эксперимент, результатом которого становятся числа и решение
+labels: [spike]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Вопрос
+      description: Какое решение должна принести проба.
+    validations:
+      required: true
+  - type: textarea
+    id: measure
+    attributes:
+      label: Что измерить
+    validations:
+      required: true
+  - type: textarea
+    id: threshold
+    attributes:
+      label: Порог решения
+      description: При каком результате выбираем один вариант, при каком другой.
+    validations:
+      required: true

@@ -1,0 +1,19 @@
+name: Задача
+description: Новая возможность или доработка
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Что сделать
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Зачем
+  - type: textarea
+    id: done
+    attributes:
+      label: Как проверить, что готово
+    validations:
+      required: true
