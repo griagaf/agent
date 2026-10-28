@@ -1753,7 +1753,7 @@ dependencies = [
 
 [[package]]
 name = "mentor-app"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "mentor-engine",
  "mentor-llm",
@@ -1765,7 +1765,7 @@ dependencies = [
 
 [[package]]
 name = "mentor-core"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -1773,35 +1773,35 @@ dependencies = [
 
 [[package]]
 name = "mentor-engine"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "mentor-core",
 ]
 
 [[package]]
 name = "mentor-llm"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "mentor-core",
 ]
 
 [[package]]
 name = "mentor-platform"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "mentor-core",
 ]
 
 [[package]]
 name = "mentor-storage"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "mentor-core",
 ]
 
 [[package]]
 name = "mentor-testkit"
-version = "0.0.0"
+version = "0.0.1"
 dependencies = [
  "mentor-core",
  "mentor-engine",
@@ -4274,7 +4274,7 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "0.0.0"
+version = "0.0.1"
 
 [[package]]
 name = "yoke"
